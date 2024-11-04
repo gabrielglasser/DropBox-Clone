@@ -14,6 +14,7 @@ class DropBoxController {
     this.initEvents();
   }
 
+
   initEvents() {
     //criando o envento de click no botão enviar arquivos
     this.btnSendFilesEl.addEventListener('click', event => {
