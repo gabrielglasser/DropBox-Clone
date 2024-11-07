@@ -1,4 +1,5 @@
 class DropBoxController {
+
   constructor() {
     //evento click botao enviar arquivos
     this.btnSendFilesEl = document.querySelector('#btn-send-file');
@@ -10,9 +11,26 @@ class DropBoxController {
     //criando barra de nome e tempo
     this.nameFileEl = this.snackModalEl.querySelector('.filename');
     this.timeLeftEl = this.snackModalEl.querySelector('.timeleft');
+    this.startUploadTime = null;
+
+    this.connectFirebase();
 
     this.initEvents();
   }
+  
+  connectFirebase() {
+    const firebaseConfig = {
+      apiKey: "AIzaSyDB_LWjN-gYlwAcTgJkNf9-HJKKV732BCU",
+      authDomain: "dropboxx-a3ed2.firebaseapp.com",
+      databaseURL: "https://dropboxx-a3ed2-default-rtdb.firebaseio.com",
+      projectId: "dropboxx-a3ed2",
+      databaseURL: "https://dropboxx-a3ed2-default-rtdb.firebaseio.com/",
+      storageBucket: "dropboxx-a3ed2.firebasestorage.app",
+      messagingSenderId: "626338415129",
+    };
+    firebase.initializeApp(firebaseConfig);
+  }
+
 
 
   initEvents() {
@@ -23,8 +41,20 @@ class DropBoxController {
     });
     //configurando o change do input de arquivos
     this.inputFilesEl.addEventListener('change', event => {
+
+      this.btnSendFilesEl.disabled = true;
+
       //recebendo os arquivos
-      this.uploadTask(event.target.files)
+      this.uploadTask(event.target.files).then(responses => {
+        responses.forEach(resp => {
+          
+          this.getFirebaseRef().push().set(resp.files["input-file"]);
+        });
+        this.uploadComplete();
+      }).catch(err => {
+        this.uploadComplete();
+        console.log(err);
+      });
 
       this.modalShow();
 
@@ -32,6 +62,20 @@ class DropBoxController {
       this.inputFilesEl.value = "";
     });
   };
+
+  uploadComplete() {
+
+    this.modalShow();
+    this.inputFilesEl.value = "";
+    this.btnSendFilesEl.disabled = false;
+
+  }
+
+
+  getFirebaseRef() {
+    return firebase.database().ref('files');
+  }
+
 
   //metodo para mostrar o modal
   modalShow(show = true) {
@@ -42,46 +86,41 @@ class DropBoxController {
   uploadTask(files) {
     let promises = [];
 
-    //convertendo em array
     [...files].forEach(file => {
       promises.push(new Promise((resolve, reject) => {
         let ajax = new XMLHttpRequest();
-        //abrindo a conexão via post
-        ajax.open('POST', '/upload');
 
+        ajax.open('POST', '/upload')
+0
         ajax.onload = event => {
-          this.modalShow(false);
 
           try {
-            resolve(JSON.parse(ajax.responseText));
-          } catch (error) {
-            reject(error);
+            resolve(JSON.parse(ajax.responseText))
+          } catch (e) {
+            reject(e)
           }
-        };
+        }
 
         ajax.onerror = event => {
-          this.modalShow(false);
-          reject(event);
-        };
+          reject(event)
+        }
 
-        //configurando o progresso do upload
         ajax.upload.onprogress = event => {
-          this.uploadProgress(event, file);
-        };
+          this.uploadProgress(event, file)
+        }
 
-        //criando o formdata para enviar o arquivo
-        let formData = new FormData();
-        formData.append('input-file', file);
-        //guarda o inicio do upload
+        let formData = new FormData()
+
+        formData.append('input-file', file)
+
         this.startUploadTime = Date.now();
-        //enviando o arquivo
-        ajax.send(formData);
 
-      }));
+        ajax.send(formData)
 
+      }))
+    })
 
-    });
-    return Promise.all(promises);
+    return Promise.all(promises)
   }
   //criando o evento de progresso do upload
   uploadProgress(event, file) {
@@ -288,3 +327,4 @@ class DropBoxController {
   }
 
 }
+
