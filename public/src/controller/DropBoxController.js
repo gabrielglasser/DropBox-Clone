@@ -12,12 +12,15 @@ class DropBoxController {
     this.nameFileEl = this.snackModalEl.querySelector('.filename');
     this.timeLeftEl = this.snackModalEl.querySelector('.timeleft');
     this.startUploadTime = null;
+    this.listFilesEl = document.querySelector('#list-of-files-and-directories');
 
     this.connectFirebase();
 
     this.initEvents();
+
+    this.readFiles();
   }
-  
+
   connectFirebase() {
     const firebaseConfig = {
       apiKey: "AIzaSyDB_LWjN-gYlwAcTgJkNf9-HJKKV732BCU",
@@ -47,7 +50,7 @@ class DropBoxController {
       //recebendo os arquivos
       this.uploadTask(event.target.files).then(responses => {
         responses.forEach(resp => {
-          
+
           this.getFirebaseRef().push().set(resp.files["input-file"]);
         });
         this.uploadComplete();
@@ -91,7 +94,7 @@ class DropBoxController {
         let ajax = new XMLHttpRequest();
 
         ajax.open('POST', '/upload')
-0
+        0
         ajax.onload = event => {
 
           try {
@@ -318,12 +321,34 @@ class DropBoxController {
                                     </svg>`
     }
   }
-  getFileView(file) {
-    return `
+  getFileView(file, key) {
+    let li = document.createElement('li');
+
+    li.dataset.key = key
+
+    li.innerHTML = `
     <li>
           ${this.getFileIconView(file)}
             <div class="name text-center">${file.name}</div>
       </li>`
+
+    return li;
+  }
+
+  //ler todos os arquivos
+  readFiles() {
+    this.getFirebaseRef().on('value', snapshot => {
+
+      this.listFilesEl.innerHTML = '';
+
+      snapshot.forEach(snapshotItem => {
+        let key = snapshotItem.key;
+        let data = snapshotItem.val();
+
+
+        this.listFilesEl.appendChild(this.getFileView(data, key));
+      })
+    })
   }
 
 }
