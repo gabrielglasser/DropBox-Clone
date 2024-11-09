@@ -27,7 +27,7 @@ class DropBoxController {
       authDomain: "dropboxx-a3ed2.firebaseapp.com",
       databaseURL: "https://dropboxx-a3ed2-default-rtdb.firebaseio.com",
       projectId: "dropboxx-a3ed2",
-      databaseURL: "https://dropboxx-a3ed2-default-rtdb.firebaseio.com/",
+      databaseURL: "https://dropboxx-a3ed2-default-rtdb.firebaseio.com",
       storageBucket: "dropboxx-a3ed2.firebasestorage.app",
       messagingSenderId: "626338415129",
     };
@@ -76,7 +76,7 @@ class DropBoxController {
 
 
   getFirebaseRef() {
-    return firebase.database().ref('files');
+    return firebase.database().ref('file');
   }
 
 
@@ -329,8 +329,10 @@ class DropBoxController {
     li.innerHTML = `
     <li>
           ${this.getFileIconView(file)}
-            <div class="name text-center">${file.name}</div>
+            <div class="name text-center">${file.originalFilename}</div>
       </li>`
+
+      this.initEventsLi(li);
 
     return li;
   }
@@ -348,6 +350,13 @@ class DropBoxController {
 
         this.listFilesEl.appendChild(this.getFileView(data, key));
       })
+    })
+  }
+
+  //seleciona os arquivos
+  initEventsLi(li){
+    li.addEventListener('click', (e) => {
+      li.classList.toggle('selected');
     })
   }
 

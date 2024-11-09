@@ -7,8 +7,8 @@ Projeto desenvolvido como exemplo do Curso Completo de JavaScript na Udemy.com.
 
 # Install dependecies
 ```
+  cd app
  npm install
- install bower
  npm install -g bower
  bower install
  ```
