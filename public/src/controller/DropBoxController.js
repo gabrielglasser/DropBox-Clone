@@ -56,10 +56,10 @@ class DropBoxController {
 
       let file = JSON.parse(li.dataset.file);
 
-      let name = prompt("Renomear o arquivo: ", file.name)
+      let name = prompt("Renomear o arquivo: ", file['0'].originalFilename);
 
       if (name) {
-        file.name = name;
+        file['0'].originalFilename = name;
 
         this.getFirebaseRef().child(li.dataset.key).set(file);
       }
