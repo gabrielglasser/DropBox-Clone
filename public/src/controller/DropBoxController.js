@@ -17,6 +17,12 @@ class DropBoxController {
     this.timeLeftEl = this.snackModalEl.querySelector('.timeleft');
     this.startUploadTime = null;
     this.listFilesEl = document.querySelector('#list-of-files-and-directories');
+    //declarando os botoes
+    this.btnNewFolder = document.querySelector('#btn-new-folder');
+    this.btnRename = document.querySelector('#btn-rename');
+    this.btnDelete = document.querySelector('#btn-delete');
+
+
 
     this.connectFirebase();
 
@@ -38,11 +44,31 @@ class DropBoxController {
     firebase.initializeApp(firebaseConfig);
   }
 
-
+  //metodo para retornar quantos itens selecionados
+  getSelection() {
+    return this.listFilesEl.querySelectorAll('.selected');
+  }
 
   initEvents() {
     this.listFilesEl.addEventListener('selectionchange', e => {
-      
+
+      switch (this.getSelection().length) {
+
+        case 0:
+          this.btnDelete.style.display = 'none';
+          this.btnRename.style.display = 'none';
+          break;
+
+        case 1:
+          this.btnDelete.style.display = 'block';
+          this.btnRename.style.display = 'block';
+          break;
+
+        default:
+          this.btnDelete.style.display = 'block';
+          this.btnRename.style.display = 'none';
+      }
+
     })
 
     //criando o envento de click no botão enviar arquivos
@@ -365,8 +391,6 @@ class DropBoxController {
   initEventsLi(li) {
     li.addEventListener('click', e => {
 
-      this.listFilesEl.dispatchEvent(this.onselectionchange)
-
       if (e.shiftKey) {
 
         let firstLi = this.listFilesEl.querySelector('.selected');
@@ -393,6 +417,8 @@ class DropBoxController {
             }
 
           });
+          this.listFilesEl.dispatchEvent(this.onselectionchange)
+
           return true
         }
 
@@ -408,6 +434,8 @@ class DropBoxController {
       }
 
       li.classList.toggle('selected');
+
+      this.listFilesEl.dispatchEvent(this.onselectionchange)
     })
   }
 
