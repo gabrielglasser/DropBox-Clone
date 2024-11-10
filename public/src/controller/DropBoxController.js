@@ -1,6 +1,10 @@
 class DropBoxController {
 
   constructor() {
+
+    //criando e disparando eventos
+    this.onselectionchange = new Event('selectionchange');
+
     //evento click botao enviar arquivos
     this.btnSendFilesEl = document.querySelector('#btn-send-file');
     this.inputFilesEl = document.querySelector('#files');
@@ -37,6 +41,10 @@ class DropBoxController {
 
 
   initEvents() {
+    this.listFilesEl.addEventListener('selectionchange', e => {
+      
+    })
+
     //criando o envento de click no botão enviar arquivos
     this.btnSendFilesEl.addEventListener('click', event => {
       //forcando o click
@@ -143,7 +151,7 @@ class DropBoxController {
     this.progressBarEl.style.width = `${porcent}%`;
 
     //atualizando o nome do arquivo
-    this.nameFileEl.innerHTML = file.name;
+    this.nameFileEl.innerHTML = file.originalFilename;
 
     //atualizando o tempo restante
     this.timeLeftEl.innerHTML = this.formatTimeLeft(timeleft);
@@ -356,6 +364,8 @@ class DropBoxController {
   //seleciona os arquivos
   initEventsLi(li) {
     li.addEventListener('click', e => {
+
+      this.listFilesEl.dispatchEvent(this.onselectionchange)
 
       if (e.shiftKey) {
 
