@@ -218,7 +218,7 @@ class DropBoxController {
   }
   //tratar tipo de arquivo e icone
   getFileIconView(file) {
-    switch (file.type) {
+    switch (file['0'].mimetype) {
       case 'folder':
         return `<svg width="160" height="160" viewBox="0 0 160 160" class="mc-icon-template-content tile__preview tile__preview--icon">
                                         <title>content-folder-large</title>
@@ -288,6 +288,7 @@ class DropBoxController {
 
       case 'video/mp4':
       case 'video/quicktime':
+      case 'video/mkv':
         return `<svg width="160" height="160" viewBox="0 0 160 160" class="mc-icon-template-content tile__preview tile__preview--icon">
                                         <title>content-video-large</title>
                                         <defs>
@@ -379,7 +380,7 @@ class DropBoxController {
     li.innerHTML = `
     <li>
           ${this.getFileIconView(file)}
-            <div class="name text-center">${file.originalFilename}</div>
+            <div class="name text-center">${file['0'].originalFilename}</div>
       </li>`
 
     this.initEventsLi(li);
