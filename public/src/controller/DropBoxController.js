@@ -1,6 +1,8 @@
 class DropBoxController {
 
   constructor() {
+    //localizando na pasta
+    this.currentFolder = ['hcode'];
 
     //criando e disparando eventos
     this.onselectionchange = new Event('selectionchange');
@@ -49,7 +51,67 @@ class DropBoxController {
     return this.listFilesEl.querySelectorAll('.selected');
   }
 
+  //metodo para deletar os arquivos
+  removeTask() {
+    let promises = [];
+
+    this.getSelection().forEach(li => {
+      let file = JSON.parse(li.dataset.file);
+      let key = li.dataset.key;
+
+      let formData = new FormData()
+
+      formData.append('path', file['0'].filepath);
+      formData.append('key', key);
+
+      console.log('FormData', file['0'].filepath)
+
+      promises.push(this.ajax('/file', 'DELETE', formData));
+
+    });
+
+    return Promise.all(promises);
+  }
+
   initEvents() {
+    //criando botao nova pasta
+    this.btnNewFolder.addEventListener('click', e => {
+
+      let name = prompt("Nome da nova pasta: ");
+
+      if (name) {
+
+        this.getFirebaseRef().push().set({
+          originalFilename: name,
+          type: 'folder',
+          mimetype: 'folder',
+          filepath: this.currentFolder.join('/')
+        })
+
+      }
+
+    });
+
+    //criando o botao delete
+    this.btnDelete.addEventListener("click", (e) => {
+      console.log("botao de excluir")
+      this.removeTask()
+        .then((responses) => {
+
+          responses.forEach(response => {
+            if (response.fields.key) {
+              this.getFirebaseRef().child
+              (response.fields.key).remove();
+            }
+          })
+
+          console.log("responses");
+        })
+        .catch((err) => {
+          console.log("erro ao exluir arquivos", err);
+        });
+    });
+
     //criando do botao rename
     this.btnRename.addEventListener('click', e => {
       let li = this.getSelection()[0];
@@ -117,7 +179,7 @@ class DropBoxController {
 
   uploadComplete() {
 
-    this.modalShow();
+    this.modalShow(false);
     this.inputFilesEl.value = "";
     this.btnSendFilesEl.disabled = false;
 
@@ -125,7 +187,7 @@ class DropBoxController {
 
 
   getFirebaseRef() {
-    return firebase.database().ref('file');
+    return firebase.database().ref('files');
   }
 
 
@@ -134,41 +196,55 @@ class DropBoxController {
     this.snackModalEl.style.display = (show) ? 'block' : 'none';
   };
 
+  ajax(
+    url,
+    method = "GET",
+    formData = new FormData(),
+    onprogress = function () { },
+    onloadstart = function () { }
+  ) {
+    return new Promise((resolve, reject) => {
+      let ajax = new XMLHttpRequest();
+
+      ajax.open(method, url);
+
+      ajax.onload = (event) => {
+        try {
+          resolve(JSON.parse(ajax.responseText));
+        } catch (e) {
+          reject(e);
+        }
+      };
+
+      ajax.onerror = (event) => {
+        reject(event);
+      };
+
+      ajax.upload.onprogress = onprogress;
+
+      onloadstart();
+
+      ajax.send(formData);
+    });
+  }
+
+
   //metodo para receber os arquivos
   uploadTask(files) {
     let promises = [];
 
     [...files].forEach(file => {
-      promises.push(new Promise((resolve, reject) => {
-        let ajax = new XMLHttpRequest();
 
-        ajax.open('POST', '/upload')
-        0
-        ajax.onload = event => {
+      let formData = new FormData()
 
-          try {
-            resolve(JSON.parse(ajax.responseText))
-          } catch (e) {
-            reject(e)
-          }
-        }
+      formData.append('input-file', file);
 
-        ajax.onerror = event => {
-          reject(event)
-        }
+      promises.push(this.ajax('/upload', 'POST', formData, () => {
 
-        ajax.upload.onprogress = event => {
-          this.uploadProgress(event, file)
-        }
+        this.uploadProgress(event, file)
 
-        let formData = new FormData()
-
-        formData.append('input-file', file)
-
+      }, () => {
         this.startUploadTime = Date.now();
-
-        ajax.send(formData)
-
       }))
     })
 
@@ -192,7 +268,7 @@ class DropBoxController {
     this.progressBarEl.style.width = `${porcent}%`;
 
     //atualizando o nome do arquivo
-    this.nameFileEl.innerHTML = file.originalFilename;
+    this.nameFileEl.innerHTML = file.name;
 
     //atualizando o tempo restante
     this.timeLeftEl.innerHTML = this.formatTimeLeft(timeleft);
