@@ -83,7 +83,6 @@ class DropBoxController {
 
         this.getFirebaseRef().push().set({
           originalFilename: name,
-          type: 'folder',
           mimetype: 'folder',
           filepath: this.currentFolder.join('/')
         })
@@ -294,7 +293,8 @@ class DropBoxController {
   }
   //tratar tipo de arquivo e icone
   getFileIconView(file) {
-    switch (file['0'].mimetype) {
+    if (file && file[0] && file[0].mimetype) {
+      switch (file[0].mimetype) {
       case 'folder':
         return `<svg width="160" height="160" viewBox="0 0 160 160" class="mc-icon-template-content tile__preview tile__preview--icon">
                                         <title>content-folder-large</title>
@@ -446,19 +446,22 @@ class DropBoxController {
                                         </g>
                                     </svg>`
     }
-  }
+  }}
   getFileView(file, key) {
-    let li = document.createElement('li');
+    let li = document.createElement("li");
 
     li.dataset.key = key;
     li.dataset.file = JSON.stringify(file);
 
     li.innerHTML = `
     <li>
-          ${this.getFileIconView(file)}
-            <div class="name text-center">${file['0'].originalFilename}</div>
-      </li>`
-
+      ${this.getFileIconView(file)}
+      <div class="name text-center">
+        ${file && file['0'] && file['0'].originalFilename
+          ? file['0'].originalFilename
+          : 'Nome não disponível'}
+      </div>
+    </li>`;
     this.initEventsLi(li);
 
     return li;
@@ -518,7 +521,7 @@ class DropBoxController {
       }
       if (!e.ctrlKey) {
 
-        this.listFilesEl.querySelectorAll('li.selected').forEach(el => {
+        this.listFilesEl.querySelectorAll('.selected').forEach(el => {
 
           el.classList.remove('selected');
 
