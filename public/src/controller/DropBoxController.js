@@ -2,7 +2,7 @@ class DropBoxController {
 
   constructor() {
     //localizando na pasta
-    this.currentFolder = ['hcode'];
+    this.currentFolder = ['USER'];
 
     //criando e disparando eventos
     this.onselectionchange = new Event('selectionchange');
@@ -61,10 +61,10 @@ class DropBoxController {
 
       let formData = new FormData()
 
-      formData.append('path', file['0'].filepath);
+      formData.append('path', file[0].filepath);
       formData.append('key', key);
 
-      console.log('FormData', file['0'].filepath)
+      console.log('FormData', file[0].filepath)
 
       promises.push(this.ajax('/file', 'DELETE', formData));
 
@@ -76,19 +76,14 @@ class DropBoxController {
   initEvents() {
     //criando botao nova pasta
     this.btnNewFolder.addEventListener('click', e => {
-
       let name = prompt("Nome da nova pasta: ");
-
       if (name) {
-
         this.getFirebaseRef().push().set({
           originalFilename: name,
-          mimetype: 'folder',
-          filepath: this.currentFolder.join('/')
+          mimetype: "folder",
+          filepath: this.currentFolder.join('/') + '/' + name,
         })
-
       }
-
     });
 
     //criando o botao delete
@@ -261,7 +256,6 @@ class DropBoxController {
 
     //tempo restante
     let timeleft = ((100 - porcent) * timespent) / porcent;
-    console.log(`Progress: ${porcent}% - File: ${file.name} - Time Left: ${this.formatTimeLeft(timeleft)}`);
 
     //atualizando a barra de progresso css
     this.progressBarEl.style.width = `${porcent}%`;
@@ -295,16 +289,6 @@ class DropBoxController {
   getFileIconView(file) {
     if (file && file[0] && file[0].mimetype) {
       switch (file[0].mimetype) {
-      case 'folder':
-        return `<svg width="160" height="160" viewBox="0 0 160 160" class="mc-icon-template-content tile__preview tile__preview--icon">
-                                        <title>content-folder-large</title>
-                                        <g fill="none" fill-rule="evenodd">
-                                            <path d="M77.955 53h50.04A3.002 3.002 0 0 1 131 56.007v58.988a4.008 4.008 0 0 1-4.003 4.005H39.003A4.002 4.002 0 0 1 35 114.995V45.99c0-2.206 1.79-3.99 3.997-3.99h26.002c1.666 0 3.667 1.166 4.49 2.605l3.341 5.848s1.281 2.544 5.12 2.544l.005.003z" fill="#71B9F4"></path>
-                                            <path d="M77.955 52h50.04A3.002 3.002 0 0 1 131 55.007v58.988a4.008 4.008 0 0 1-4.003 4.005H39.003A4.002 4.002 0 0 1 35 113.995V44.99c0-2.206 1.79-3.99 3.997-3.99h26.002c1.666 0 3.667 1.166 4.49 2.605l3.341 5.848s1.281 2.544 5.12 2.544l.005.003z" fill="#92CEFF"></path>
-                                        </g>
-                                    </svg>`;
-        break;
-
       case 'aplication/pdf':
         return `<svg version="1.1" id="Camada_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="160px" height="160px" viewBox="0 0 160 160" enable-background="new 0 0 160 160" xml:space="preserve">
                                         <filter height="102%" width="101.4%" id="mc-content-unknown-large-a" filterUnits="objectBoundingBox" y="-.5%" x="-.7%">
@@ -446,7 +430,22 @@ class DropBoxController {
                                         </g>
                                     </svg>`
     }
-  }}
+  } if(file.mimetype){
+    switch(file.mimetype){
+      case "folder":
+        return `
+        <svg width="160" height="160" viewBox="0 0 160 160" class="mc-icon-template-content tile__preview tile__preview--icon">
+            <title>content-folder-large</title>
+            <g fill="none" fill-rule="evenodd">
+                <path d="M77.955 53h50.04A3.002 3.002 0 0 1 131 56.007v58.988a4.008 4.008 0 0 1-4.003 4.005H39.003A4.002 4.002 0 0 1 35 114.995V45.99c0-2.206 1.79-3.99 3.997-3.99h26.002c1.666 0 3.667 1.166 4.49 2.605l3.341 5.848s1.281 2.544 5.12 2.544l.005.003z" fill="#71B9F4"></path>
+                <path d="M77.955 52h50.04A3.002 3.002 0 0 1 131 55.007v58.988a4.008 4.008 0 0 1-4.003 4.005H39.003A4.002 4.002 0 0 1 35 113.995V44.99c0-2.206 1.79-3.99 3.997-3.99h26.002c1.666 0 3.667 1.166 4.49 2.605l3.341 5.848s1.281 2.544 5.12 2.544l.005.003z" fill="#92CEFF"></path>
+            </g>
+        </svg>`;
+        break;
+    }
+  }
+
+}
   getFileView(file, key) {
     let li = document.createElement("li");
 
@@ -457,9 +456,7 @@ class DropBoxController {
     <li>
       ${this.getFileIconView(file)}
       <div class="name text-center">
-        ${file && file['0'] && file['0'].originalFilename
-          ? file['0'].originalFilename
-          : 'Nome não disponível'}
+      ${file.originalFilename || file['0'].originalFilename}
       </div>
     </li>`;
     this.initEventsLi(li);
