@@ -9,6 +9,7 @@ router.get('/', function(req, res, next) {
 });
 
 router.delete('/file', (req, res) => {
+  console.log('Requisição DELETE recebida');
   let form = new formidable.IncomingForm({
     uploadDir: './upload',
     keepExtensions: true
@@ -16,7 +17,7 @@ router.delete('/file', (req, res) => {
 
   form.parse(req, (err, fields, files) => {
 
-    let path = fields.path;
+    let path = fields.newFilename;
 
     if (fs.existsSync(path)) {
       fs.unlink(path, err => {
@@ -33,7 +34,7 @@ router.delete('/file', (req, res) => {
     }
     
   })
-})
+  res.json({ message: 'Arquivo deletado com sucesso' });})
 
 router.post('/upload', (req, res) => {
 
